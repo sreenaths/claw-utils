@@ -1,0 +1,10 @@
+.git/
+.git
+agents/main/sessions/
+canvas/
+completions/
+devices/
+identity/
+logs/
+*.json.bak*
+.DS_Store

@@ -15,6 +15,10 @@ import subprocess
 import threading
 import time
 from pathlib import Path
+import getpass
+import grp
+import os
+import pwd
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -31,6 +35,21 @@ class BackupManager:
         self.source = source
         self.target_repo = target_repo
 
+    def get_invoking_user_group(self) -> tuple[str, str]:
+        # Prefer numeric IDs (more reliable)
+        sudo_uid = os.environ.get("SUDO_UID")
+        sudo_gid = os.environ.get("SUDO_GID")
+        if sudo_uid:
+            uid = int(sudo_uid)
+            gid = int(sudo_gid) if sudo_gid else os.getgid()
+            user = pwd.getpwuid(uid).pw_name
+            group = grp.getgrgid(gid).gr_name
+        else:
+            # Not run under sudo — fall back to normal lookup
+            user = getpass.getuser()
+            group = grp.getgrgid(os.getgid()).gr_name
+        return user, group
+
     def run_rsync(self) -> None:
         """
         Rsync source -> target_repo, mirroring contents.
@@ -40,12 +59,16 @@ class BackupManager:
         src = str(self.source.resolve()) + "/"
         dst = str(self.target_repo.resolve()) + "/"
 
+        user, group = self.get_invoking_user_group()
+        exclude_file = Path(os.getcwd()) / ".rsyncignore"
+
         cmd = [
             "rsync",
-            "-a",            # archive mode
+            "-a",
+            "--chown", f"{user}:{group}", # set ownership to current user/group (important on running with sudo)
+            "--chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r",
             "--delete",      # delete files in target that don't exist in source
-            "--exclude", ".git/",
-            "--exclude", ".git",  # extra safety
+            "--exclude-from", str(exclude_file), # exclude patterns from .rsyncignore
             src,
             dst,
         ]
