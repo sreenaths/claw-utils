@@ -1,5 +1,7 @@
 # Git Backup for OpenClaw
 
+Creates a timeline of all files changes in `.openclaw` on git. Each change will be automatically committed into a repo of your choice, providing visibility into the inner working of your openclaw instance.
+
 ## Setup
 ```shell
 # We need the latest rsync
