@@ -26,6 +26,23 @@ from watchdog.events import FileSystemEventHandler
 from git import Repo, InvalidGitRepositoryError, GitCommandError, Actor
 
 
+FILE_TAG_MAP = {
+    "workspace/SOUL.md": "soul",
+    "workspace/MEMORY.md": "mem", # High-level memory (not raw logs)
+    "workspace/IDENTITY.md": "idty",
+    "workspace/TOOLS.md": "tools",
+    "workspace/USER.md": "usr",
+    "workspace/HEARTBEAT.md": "hbt",
+    "workspace/BOOTSTRAP.md": "boot",
+    "workspace/AGENTS.md": "agts",
+    "workspace/projects/": "proj",
+    "workspace/memory/": "mem-log", # Raw memory logs (e.g. from soul)
+
+    "openclaw.json": "conf",
+    "agents/main/agent/models.json": "conf",
+    "cron/": "cron",
+}
+
 class BackupManager:
     """
     Manages the backup process: rsync + git commit/push.
@@ -76,14 +93,35 @@ class BackupManager:
         # rsync returns 0 on success, non-zero on error
         subprocess.run(cmd, check=True)
 
-    def count_updated_files(self, repo: Repo) -> int:
+    def get_change_details(self, repo: Repo) -> tuple[int, list[str]]:
         """
         Count changed files after rsync.
         Uses `git status --porcelain` which yields one line per changed path.
         """
         changed = repo.git.status("--porcelain").splitlines()
         # Each line corresponds to a path. That’s a good "file count" for the message.
-        return len([line for line in changed if line.strip()])
+        files = [line for line in changed if line.strip()]
+
+        tags = set()
+        for line in files:
+            path = line[3:]  # Skip the status chars
+            for prefix, tag in FILE_TAG_MAP.items():
+                if path.startswith(prefix):
+                    tags.add(tag)
+                    break
+            else:
+                tags.add("misc") # Miscellaneous changes that don't fit known tags
+
+        if not tags:
+            tags.add("unknown")
+
+        tags_list = list(sorted(tags))
+        if "misc" in tags_list:
+            # Move misc to the end
+            tags_list.remove("misc")
+            tags_list.append("misc")
+
+        return len(files), tags_list
 
 
     def commit_and_push_if_needed(self) -> None:
@@ -93,14 +131,14 @@ class BackupManager:
 
         repo = Repo(str(self.target_repo))
 
-        updated = self.count_updated_files(repo)
-        if updated == 0:
+        updated_count, tags = self.get_change_details(repo)
+        if updated_count == 0:
             return
 
         # Stage everything (including deletions)
         repo.git.add(A=True)
 
-        msg = f"Updated {updated} files"
+        msg = f"Updated {updated_count} files - {', '.join(tags)}"
         author = Actor("git-backup-watcher", "git-backup-watcher@noreply.local")
         repo.index.commit(msg, author=author, committer=author)
 
@@ -194,7 +232,7 @@ def main():
     parser = argparse.ArgumentParser(description="Rsync+git watcher")
     parser.add_argument("source", help="Source directory (can be in another user's home)")
     parser.add_argument("target_repo", help="Path to local git repo")
-    parser.add_argument("--debounce", type=float, default=5.0, help="Debounce seconds (default: 5.0)")
+    parser.add_argument("--debounce", type=float, default=30.0, help="Debounce seconds (default: 30.0)")
     args = parser.parse_args()
 
     source = Path(args.source)
