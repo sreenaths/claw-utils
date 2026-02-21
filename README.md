@@ -8,9 +8,9 @@ Simplifying OpenClaw setup and management 😌
 
 Configure Nginx as a proxy for Anthropic and Brave APIs to keep your API keys secure.
 
-## 2. [Git Backup](./git-backup/)
+## 2. [TimeMachine](./timemachine/)
 
-Back up your OpenClaw files into a git repositories with this utility.
+Back up and create a timeline of your OpenClaw file changes in a git repository.
 
 ## 3. [Hosting an Embedding Model](./hosting/)
 
