@@ -1,6 +1,8 @@
 # Hosting an Embedding Model
 
-Follow these steps to host an embedding model locally using Ollama, enabling it to be shared seamlessly across all OpenClaw instances.
+**Prerequisite: ollama**
+
+Follow these steps to host an embedding model locally using Ollama, enabling it to be shared seamlessly across all OpenClaw instances for semantic search.
 
 ## Setup
 

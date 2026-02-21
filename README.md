@@ -6,7 +6,7 @@ Simplifying OpenClaw setup and management 😌
 
 ## 1. [Proxy](./proxy/)
 
-Configure Nginx as a proxy for Anthropic and Brave APIs to keep your API keys secure.
+Configure Nginx as a proxy to keep your API keys secure.
 
 ## 2. [TimeMachine](./timemachine/)
 

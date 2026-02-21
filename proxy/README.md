@@ -1,6 +1,6 @@
 # Proxy for OpenClaw
 
-- **Prerequisite: Nginx**
+- **Prerequisite: nginx**
 - To be run in an admin user space.
 - The proxy is restricted to local machine access only, and accepts plain HTTP requests.
 
@@ -12,7 +12,8 @@ brew install nginx
 
 ## Set the Keys
 
-Simply update [secrets.conf](./secrets.conf) with your Anthropic and Brave keys.
+Simply update [secrets.conf](./secrets.conf) with your Anthropic and Brave keys.\
+_Only those were relevant for me, feel free to contribute others too_ 🙂
 
 > Nginx does not natively support the use of environment variables within most configuration blocks. Therefore, the simplest and secure way to manage secret keys is by storing them in a file located in the admin user's space, which is inaccessible to unauthorized users.
 
