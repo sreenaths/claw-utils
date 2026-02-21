@@ -1,40 +1,17 @@
 # Claw Utils 🦞
 
-Making OpenClaw easier 😌
+Simplifying OpenClaw setup and management 😌
 
-These utils are to be run as admin user, OpenClaw must be run under standard user.
+> These utilities are designed to be run as an admin user, while OpenClaw itself should be operated under a standard user account.
 
-## 1. [LLM Proxy](./llm-proxy/)
+## 1. [Proxy](./proxy/)
+
+Configure Nginx as a proxy for Anthropic and Brave APIs to keep your API keys secure.
+
 ## 2. [Git Backup](./git-backup/)
-## 3. Hosting
 
-Steps to host an embedding model using ollama to be shared between all openclaw instances.
+Back up your OpenClaw files into a git repositories with this utility.
 
-### Install
+## 3. [Hosting an Embedding Model](./hosting/)
 
-```shell
-brew install ollama
-```
-
-### Start in background
-
-```shell
-brew services start ollama
-```
-
-### Pull and host model
-
-```shell
-ollama pull embeddinggemma
-```
-
-### Testing
-
-Once setup the following command should work.
-
-```shell
-curl http://localhost:11434/api/embeddings -d '{
-  "model": "embeddinggemma",
-  "prompt": "Hello world"
-}'
-```
+Host an embedding model locally using Ollama, enabling it to be shared seamlessly across all OpenClaw instances.
