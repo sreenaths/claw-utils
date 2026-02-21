@@ -13,7 +13,7 @@ brew install nginx
 ## Set the Keys
 
 Simply update [secrets.conf](./secrets.conf) with your Anthropic and Brave keys.\
-_Only those were relevant for me, feel free to contribute others too_ 🙂
+_Only those were relevant for me, feel free to contribute others_ 🙂
 
 > Nginx does not natively support the use of environment variables within most configuration blocks. Therefore, the simplest and secure way to manage secret keys is by storing them in a file located in the admin user's space, which is inaccessible to unauthorized users.
 
