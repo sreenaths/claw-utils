@@ -3,9 +3,10 @@
 agents/main/sessions/
 canvas/
 completions/
+credentials/
 devices/
 identity/
 logs/
 *.json.bak*
-.DS_Store
 *.swp
+.DS_Store
