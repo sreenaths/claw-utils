@@ -48,9 +48,14 @@ class BackupManager:
     Manages the backup process: rsync + git commit/push.
     """
 
-    def __init__(self, source: Path, target_repo: Path):
+    source: Path
+    target_repo: Path
+    target_dir: str
+
+    def __init__(self, source: Path, target_repo: Path, target_dir: str):
         self.source = source
         self.target_repo = target_repo
+        self.target_dir = target_dir
 
     def get_invoking_user_group(self) -> tuple[str, str]:
         # Prefer numeric IDs (more reliable)
@@ -72,9 +77,14 @@ class BackupManager:
         Rsync source -> target_repo, mirroring contents.
         Copies the *contents* of source into the repo root.
         """
+
+        # Build target path and ensure it exists
+        target = self.target_repo / self.target_dir
+        target.mkdir(parents=True, exist_ok=True)
+
         # Trailing slash means "copy contents of dir"
         src = str(self.source.resolve()) + "/"
-        dst = str(self.target_repo.resolve()) + "/"
+        dst = str(target.resolve()) + "/"
 
         user, group = self.get_invoking_user_group()
         exclude_file = Path(os.getcwd()) / ".rsyncignore"
@@ -210,7 +220,7 @@ class DebouncedSyncHandler(FileSystemEventHandler):
         self.backup_manager.sync_once()
 
 
-def validate_paths(source: Path, target_repo: Path) -> None:
+def validate_paths(source: Path, target_repo: Path, target_dir: str) -> None:
     """
     Validate the source and target paths.
     """
@@ -219,6 +229,9 @@ def validate_paths(source: Path, target_repo: Path) -> None:
 
     if not target_repo.exists() or not target_repo.is_dir():
         raise SystemExit(f"target_repo path is not a directory: {target_repo}")
+
+    if not target_dir:
+        raise SystemExit("target_dir cannot be empty")
 
     # Ensure it's a git repo
     try:
@@ -234,15 +247,16 @@ def main():
     parser = argparse.ArgumentParser(description="Rsync+git watcher")
     parser.add_argument("source", help="Source directory (can be in another user's home)")
     parser.add_argument("target_repo", help="Path to local git repo")
+    parser.add_argument("target_dir", help="Directory path in the repo to sync into. Could be like <agent name>_<version>")
     parser.add_argument("--debounce", type=float, default=30.0, help="Debounce seconds (default: 30.0)")
     args = parser.parse_args()
 
     source = Path(args.source)
     target_repo = Path(args.target_repo)
 
-    validate_paths(source, target_repo)
+    validate_paths(source, target_repo, args.target_dir)
 
-    backup_manager = BackupManager(source, target_repo)
+    backup_manager = BackupManager(source, target_repo, args.target_dir)
     event_handler = DebouncedSyncHandler(backup_manager, debounce_seconds=args.debounce)
 
     # Initial sync on start

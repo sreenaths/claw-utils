@@ -2,7 +2,7 @@
 
 **Prerequisite: uv, rsync**
 
-TimeMachine is a tool designed to create a timeline of all file changes in the `~/.openclaw` directory on git. Each change is automatically committed into a repository of your choice, providing visibility into the inner workings of your OpenClaw instance.
+TimeMachine is a tool designed to create a timeline of all the file changes in the `~/.openclaw` directory using git. Each change is automatically committed and pushed into a repository of your choice, providing visibility into the inner workings of your OpenClaw agent.
 
 ## Setup
 
@@ -10,17 +10,19 @@ TimeMachine is a tool designed to create a timeline of all file changes in the `
 # Install the latest version of `rsync`
 brew install rsync
 
-# Sync your environment using `uv`
-uv sync
+sudo chmod +a "adminuser allow list,search,readattr,readextattr,readsecurity,file_inherit,directory_inherit" /path/to/.openclaw
 ```
 
 ## Usage
-To run TimeMachine, use the following command:
+Run the TimeMachine watcher script to start monitoring and syncing changes.
 
 ```shell
-sudo uv run python ./watcher.py /home/agent-user/.openclaw /path/to/local/repo
+uv run python ./watcher.py /path/to/.openclaw /path/to/local/repo mybot_v1
 ```
 
-Replace `/home/agent-user/.openclaw` with the path to the `.openclaw` directory you want to monitor, and `/path/to/local/repo` with the path to your local repository where changes will be committed.
+The script requires three positional arguments:
+1. **Source Directory**: The path to the `.openclaw` directory that you want to monitor for changes.
+2. **Target Repository**: The path to your local Git repository where the changes will be committed and pushed.
+3. **Target Directory**: The name or path of a subdirectory within the repository where the files will be added. This can include details like your agent's name or deployment version, making it easier to organize multiple agent instances within a single repository.
 
-> **Note:** The `sudo` command is required to read from another user's space.
+> Note that the target directory will be overwritten.
