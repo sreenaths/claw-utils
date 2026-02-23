@@ -10,7 +10,8 @@ TimeMachine is a tool designed to create a timeline of all the file changes in t
 # Install the latest version of `rsync`
 brew install rsync
 
-sudo chmod +a "adminuser allow list,search,readattr,readextattr,readsecurity,file_inherit,directory_inherit" /path/to/.openclaw
+# Grant admin group read/traverse ACL access for rsync
+sudo chmod -R +a "group:admin allow read,execute,file_inherit,directory_inherit" /path/to/.openclaw
 ```
 
 ## Usage
